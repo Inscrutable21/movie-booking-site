@@ -1,0 +1,84 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+model User {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String        @unique
+  password     String
+  role         String        @default("user")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  reservations Reservation[]
+}
+
+model Movie {
+   id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  genre       String
+  duration    Int
+  description String
+  poster      String?
+  rating      Float?     
+  trailerLink String?    
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  showtimes   Showtime[]
+}
+
+model Theatre {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  location  String
+  capacity  Int
+  image     String?
+  showtimes Showtime[]
+  seats     Seat[]
+}
+
+model Showtime {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  movieId      String        @db.ObjectId
+  theatreId    String        @db.ObjectId
+  movie        Movie         @relation(fields: [movieId], references: [id])
+  theatre      Theatre       @relation(fields: [theatreId], references: [id])
+  datetime     DateTime
+  reservations Reservation[]
+}
+
+model Seat {
+   id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  theatreId    String        @db.ObjectId
+  theatre      Theatre       @relation(fields: [theatreId], references: [id])
+  row          String
+  number       Int
+  type         String
+  isAvailable  Boolean       @default(true)
+  reservations Reservation[]
+  price        Float
+  isAccessible Boolean       @default(false)
+  isAisle      Boolean       @default(false)
+  isWindow     Boolean       @default(false)
+}
+
+
+model Reservation {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  showtimeId String   @db.ObjectId
+  seatId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  showtime   Showtime @relation(fields: [showtimeId], references: [id])
+  seat       Seat     @relation(fields: [seatId], references: [id])
+  status     String   @default("pending") 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+
+
+}
